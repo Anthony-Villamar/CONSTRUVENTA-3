@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login</title>
+</head>
+<body>
+    <h2>Inicio de Sesión</h2>
+
+    <input type="email" id="email" placeholder="Email"><br>
+    <input type="password" id="password" placeholder="Contraseña"><br>
+
+    <button onclick="login()">Ingresar</button>
+    <br><br>
+    <a href="register.html">Registrarse</a>
+
+    <script>
+        async function login() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+
+            const params = new URLSearchParams({ email, password });
+
+            const res = await fetch(`http://localhost:3000/login?${params.toString()}`, {
+                method: "POST"
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                alert("Bienvenido " + data.nombre + " (Rol: " + data.rol + ")");
+
+                // Guardamos el usuario para después
+                localStorage.setItem("cedula", data.cedula);
+                localStorage.setItem("rol", data.rol);
+
+                if (data.rol === "admin") {
+                    window.location.href = "admin.html";
+                } else {
+                    window.location.href = "venta.html";
+                }
+            } else {
+                alert("Credenciales inválidas");
+            }
+        }
+    </script>
+</body>
+</html>
