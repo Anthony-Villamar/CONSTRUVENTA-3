@@ -18,6 +18,7 @@ import express from "express";
      database: process.env.DB_NAME || "logistica_transp",
      port: process.env.DB_PORT || 3306
    });
+   
 
 
 app.use("/", envioRoutes);
