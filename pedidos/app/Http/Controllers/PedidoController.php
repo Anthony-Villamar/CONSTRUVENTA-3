@@ -22,7 +22,8 @@ class PedidoController extends Controller
     $productos = $data['productos'];
 
     // Obtener usuario
-    $usuarioRes = @file_get_contents("http://127.0.0.1:3000/usuarios/" . $usuario_id);
+    $usuarioRes = @file_get_contents("https://usuarios-1yw0.onrender.com
+/usuarios/" . $usuario_id);
     $usuario = json_decode($usuarioRes, true);
 
     if (!$usuario) {
@@ -57,7 +58,7 @@ class PedidoController extends Controller
             ]
         ];
         $context = stream_context_create($opts);
-        @file_get_contents("http://127.0.0.1:8002/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
+        @file_get_contents("https://inventario-d5am.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
     }
 
     return response()->json([
