@@ -22,7 +22,7 @@ class PedidoController extends Controller
     $productos = $data['productos'];
 
     // Obtener usuario
-    $usuarioRes = @file_get_contents("https://usuarios-1yw0.onrender.com/usuarios/" . $usuario_id);
+    $usuarioRes = @file_get_contents("http://127.0.0.1:3000/usuarios/" . $usuario_id);
     $usuario = json_decode($usuarioRes, true);
 
     if (!$usuario) {
@@ -57,7 +57,7 @@ class PedidoController extends Controller
             ]
         ];
         $context = stream_context_create($opts);
-        @file_get_contents("https://inventario-d5am.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
+        @file_get_contents("http://127.0.0.1:8002/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
     }
 
     return response()->json([
@@ -77,4 +77,26 @@ class PedidoController extends Controller
 
         return response()->json($pedido);
     }
+
+    public function listarPorUsuario(Request $request, $usuario_id)
+{
+    try {
+        $query = DB::table('pedido')->where('id_cliente', $usuario_id);
+
+        if ($request->has('fecha_inicio') && $request->has('fecha_fin')) {
+            $query->whereBetween('fecha_pedido', [
+                $request->fecha_inicio . ' 00:00:00',
+                $request->fecha_fin . ' 23:59:59'
+            ]);
+        }
+
+        $pedidos = $query->orderBy('fecha_pedido', 'desc')->get();
+
+        return response()->json($pedidos);
+    } catch (\Exception $e) {
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+
 }
