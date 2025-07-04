@@ -11,76 +11,77 @@ use Exception;
 class PedidoController extends Controller
 {
     public function crear(Request $request)
-    {
+{
+    \Log::info('==> Inicia método crear()');
+
+    $data = json_decode(file_get_contents("php://input"), true);
+    \Log::info('Datos recibidos', $data);
+
+    if (!$data || !isset($data['usuario_id']) || !isset($data['productos'])) {
+        \Log::error('Datos incompletos');
+        return response()->json(['mensaje' => 'Datos incompletos'], 400);
+    }
+
+    $usuario_id = $data['usuario_id'];
+    $productos = $data['productos'];
+
+    \Log::info('Consultando usuario: ' . $usuario_id);
+    $response = Http::get("https://usuarios-1yw0.onrender.com/usuarios/" . $usuario_id);
+
+    if ($response->failed()) {
+        \Log::error('Usuario no encontrado');
+        return response()->json(['mensaje' => 'Usuario no encontrado'], 404);
+    }
+
+    $usuario = $response->json();
+    \Log::info('Usuario encontrado', $usuario);
+
+    $ids_pedidos = [];
+
+    foreach ($productos as $producto) {
+        \Log::info('Procesando producto', $producto);
+
+        $id_pedido = Str::uuid();
+        \Log::info('ID pedido generado: ' . $id_pedido);
+
         try {
-            // ✅ Usar request->input en lugar de json_decode php://input
-            $data = $request->input();
-
-            if (!$data || !isset($data['usuario_id']) || !isset($data['productos'])) {
-                return response()->json(['mensaje' => 'Datos incompletos'], 400);
-            }
-
-            \Log::info('Pedido recibido', $data);
-
-            $usuario_id = $data['usuario_id'];
-            $productos = $data['productos'];
-
-            // 🔧 Obtener usuario con Http::get y manejo de error
-            $response = Http::timeout(5)->get("https://usuarios-1yw0.onrender.com/usuarios/" . $usuario_id);
-
-            if ($response->failed()) {
-                \Log::error('Usuario no encontrado o microservicio caído', ['usuario_id' => $usuario_id]);
-                return response()->json(['mensaje' => 'Usuario no encontrado'], 404);
-            }
-
-            $usuario = $response->json();
-
-            // ✅ Validar campos necesarios del usuario
-            if (!isset($usuario['cedula'], $usuario['direccion'], $usuario['zona'])) {
-                \Log::error('Usuario con datos incompletos', $usuario);
-                return response()->json(['mensaje' => 'Datos incompletos en usuario'], 500);
-            }
-
-            $ids_pedidos = [];
-
-            foreach ($productos as $producto) {
-                $id_pedido = Str::uuid();
-
-                DB::table('pedido')->insert([
-                    'id_pedido' => $id_pedido,
-                    'id_cliente' => $usuario['cedula'],
-                    'producto' => $producto['codigo_producto'],
-                    'cantidad' => $producto['cantidad'],
-                    'fecha_pedido' => now(),
-                    'direccion_entrega' => $usuario['direccion'],
-                    'zona_entrega' => $usuario['zona']
-                ]);
-
-                $ids_pedidos[] = $id_pedido;
-
-                // ✅ Actualizar stock del producto con Http::put en lugar de file_get_contents
-                $updateResponse = Http::timeout(5)->put("https://inventario-d5am.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", [
-                    'cantidad' => $producto['cantidad']
-                ]);
-
-                if ($updateResponse->failed()) {
-                    \Log::error('Error actualizando inventario', [
-                        'producto_codigo' => $producto['codigo_producto'],
-                        'status' => $updateResponse->status()
-                    ]);
-                }
-            }
-
-            return response()->json([
-                'mensaje' => 'Pedido(s) creados correctamente',
-                'ids_pedidos' => $ids_pedidos
+            DB::table('pedido')->insert([
+                'id_pedido' => $id_pedido,
+                'id_cliente' => $usuario['cedula'],
+                'producto' => $producto['codigo_producto'],
+                'cantidad' => $producto['cantidad'],
+                'fecha_pedido' => now(),
+                'direccion_entrega' => $usuario['direccion'],
+                'zona_entrega' => $usuario['zona']
             ]);
+            \Log::info('Pedido insertado correctamente');
 
-        } catch (Exception $e) {
-            \Log::error('Error en crear pedido', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
-            return response()->json(['mensaje' => 'Error interno en el servidor'], 500);
+            $ids_pedidos[] = $id_pedido;
+
+            $dataUpdate = ["cantidad" => $producto['cantidad']];
+            $opts = [
+                "http" => [
+                    "method" => "PUT",
+                    "header" => "Content-Type: application/json",
+                    "content" => json_encode($dataUpdate)
+                ]
+            ];
+            $context = stream_context_create($opts);
+            $result = @file_get_contents("https://inventario-d5am.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
+
+            \Log::info('Actualización de inventario', [$result]);
+        } catch (\Exception $e) {
+            \Log::error('Error al procesar pedido: ' . $e->getMessage());
+            return response()->json(['mensaje' => 'Error interno al procesar pedido'], 500);
         }
     }
+
+    return response()->json([
+        'mensaje' => 'Pedido(s) creados correctamente',
+        'ids_pedidos' => $ids_pedidos
+    ]);
+}
+
 
     public function consultarPedido($id_pedido)
     {
