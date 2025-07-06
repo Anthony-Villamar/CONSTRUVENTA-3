@@ -11,3 +11,4 @@ Route::get('/productos', [ProductoController::class, 'listar']);
 Route::get('/productos/{codigo_producto}', [ProductoController::class, 'consultar']);
 Route::put('/productos/{codigo_producto}/existencias', [ProductoController::class, 'actualizarExistencias']);
 Route::get('/alerta-stock', [ProductoController::class, 'alertaStock']);
+Route::put('/productos/{codigo_producto}/reabastecer', [ProductoController::class, 'reabastecer']);
