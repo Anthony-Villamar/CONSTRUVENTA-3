@@ -89,4 +89,15 @@ class ProductoController extends Controller
             'nuevo_stock' => $nuevo_stock
         ]);
     }
+
+    // 🔔 NUEVO MÉTODO: Alerta de productos con stock menor a 15
+    public function alertaStock()
+    {
+        $productos = DB::table('producto')->where('stock', '<', 15)->get();
+
+        return response()->json([
+            'mensaje' => 'Productos con bajo stock',
+            'productos' => $productos
+        ]);
+    }
 }
