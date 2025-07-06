@@ -98,7 +98,52 @@ class ProductoController extends Controller
     ]);
 }
 
+public function actualizar(Request $request, $codigo_producto)
+{
+    $producto = DB::table('producto')->where('codigo_producto', $codigo_producto)->first();
+    if (!$producto) {
+        return response()->json(['mensaje' => 'Producto no encontrado'], 404);
+    }
 
+    // Validaciones si deseas
+    $validator = Validator::make($request->all(), [
+        'nombre' => 'sometimes|string|max:50',
+        'descripcion' => 'nullable|string',
+        'categoria' => 'sometimes|string|max:50',
+        'precio' => 'sometimes|numeric',
+        'stock' => 'sometimes|integer',
+        'peso_kg' => 'sometimes|numeric',
+        'imagen' => 'nullable|image|mimes:jpeg,png,jpg|max:2048',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
+    }
+
+    // ✅ Procesa imagen si viene en el request
+    $nombreImagen = $producto->imagen; // mantiene la anterior si no cambia
+    if ($request->hasFile('imagen')) {
+        $file = $request->file('imagen');
+        $nombreImagen = time() . '_' . $file->getClientOriginalName();
+        $file->move(public_path('imagenes_productos'), $nombreImagen);
+    }
+
+    // ✅ Actualiza en DB
+    DB::table('producto')->where('codigo_producto', $codigo_producto)->update([
+        'nombre' => $request->nombre ?? $producto->nombre,
+        'descripcion' => $request->descripcion ?? $producto->descripcion,
+        'categoria' => $request->categoria ?? $producto->categoria,
+        'precio' => $request->precio ?? $producto->precio,
+        'stock' => $request->stock ?? $producto->stock,
+        'peso_kg' => $request->peso_kg ?? $producto->peso_kg,
+        'imagen' => $nombreImagen,
+    ]);
+
+    return response()->json(['mensaje' => 'Producto actualizado correctamente']);
+}
+
+
+    
     public function consultar($codigo_producto)
     {
         $producto = DB::table('producto')->where('codigo_producto', $codigo_producto)->first();
