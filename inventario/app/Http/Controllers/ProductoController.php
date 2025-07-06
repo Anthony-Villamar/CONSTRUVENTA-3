@@ -11,7 +11,7 @@ class ProductoController extends Controller
     public function registrar(Request $request)
 {
     $validator = Validator::make($request->all(), [
-        'codigo_producto' => 'required|string|max:10|unique:Producto,codigo_producto',
+        'codigo_producto' => 'required|string|max:10|unique:producto,codigo_producto',
         'nombre' => 'required|string|max:50',
         'descripcion' => 'nullable|string',
         'categoria' => 'required|string|max:50',
