@@ -115,11 +115,11 @@ class PedidoController extends Controller
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-//     public function listarPedidosPendientes()
-// {
-//     $pedidos = DB::table('pedido')->get(); // si deseas filtrar, usa where()
-//     return response()->json($pedidos);
-// }
+    public function listarPedidosPendientes()
+{
+    $pedidos = DB::table('pedido')->get(); // si deseas filtrar, usa where()
+    return response()->json($pedidos);
+}
 
     
     
