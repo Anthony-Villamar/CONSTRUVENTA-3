@@ -9,33 +9,39 @@ use Illuminate\Support\Facades\Validator;
 class ProductoController extends Controller
 {
     public function registrar(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'codigo_producto' => 'required|string|max:10|unique:Producto,codigo_producto',
-            'nombre' => 'required|string|max:50',
-            'descripcion' => 'nullable|string',
-            'categoria' => 'required|string|max:50',
-            'precio' => 'required|numeric',
-            'stock' => 'required|integer',
-            'peso_kg' => 'required|numeric',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'codigo_producto' => 'required|string|max:10|unique:Producto,codigo_producto',
+        'nombre' => 'required|string|max:50',
+        'descripcion' => 'nullable|string',
+        'categoria' => 'required|string|max:50',
+        'precio' => 'required|numeric',
+        'stock' => 'required|integer',
+        'peso_kg' => 'required|numeric',
+    ]);
 
-        if ($validator->fails()) {
-            return response()->json($validator->errors(), 422);
-        }
-
-        DB::table('producto')->insert([
-            'codigo_producto' => $request->codigo_producto,
-            'nombre' => $request->nombre,
-            'descripcion' => $request->descripcion,
-            'categoria' => $request->categoria,
-            'precio' => $request->precio,
-            'stock' => $request->stock,
-            'peso_kg' => $request->peso_kg,
-        ]);
-
-        return response()->json(['mensaje' => 'Producto registrado correctamente']);
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
     }
+
+    // ✅ Redondea antes de insertar
+    $request->merge([
+        'precio' => number_format($request->precio, 2, '.', ''),
+        'peso_kg' => number_format($request->peso_kg, 2, '.', '')
+    ]);
+
+    DB::table('producto')->insert([
+        'codigo_producto' => $request->codigo_producto,
+        'nombre' => $request->nombre,
+        'descripcion' => $request->descripcion,
+        'categoria' => $request->categoria,
+        'precio' => $request->precio,
+        'stock' => $request->stock,
+        'peso_kg' => $request->peso_kg,
+    ]);
+
+    return response()->json(['mensaje' => 'Producto registrado correctamente']);
+}
 
     public function consultar($codigo_producto)
     {
