@@ -13,3 +13,4 @@ Route::get('/ping', function () {
 
 Route::get('/pedidos/usuario/{usuario_id}', [PedidoController::class, 'listarPorUsuario']);
 Route::get('/pedidos/pendientes', [PedidoController::class, 'listarPedidosPendientes']);
+Route::put('/productos/{codigo_producto}/reabastecer', [ProductoController::class, 'reabastecer']);
