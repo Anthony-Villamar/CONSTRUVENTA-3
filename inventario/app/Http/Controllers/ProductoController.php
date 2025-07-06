@@ -100,4 +100,36 @@ class ProductoController extends Controller
             'productos' => $productos
         ]);
     }
+
+    public function reabastecer(Request $request, $codigo_producto)
+{
+    $validator = Validator::make($request->all(), [
+        'cantidad' => 'required|integer|min:1',
+    ]);
+
+    if ($validator->fails()) {
+        return response()->json($validator->errors(), 422);
+    }
+
+    $producto = DB::table('producto')->where('codigo_producto', $codigo_producto)->first();
+
+    if (!$producto) {
+        return response()->json(['mensaje' => 'Producto no encontrado'], 404);
+    }
+
+    $stock_actual = $producto->stock;
+    $cantidad_a_sumar = $request->cantidad;
+    $nuevo_stock = $stock_actual + $cantidad_a_sumar;
+
+    DB::table('producto')->where('codigo_producto', $codigo_producto)->update([
+        'stock' => $nuevo_stock
+    ]);
+
+    return response()->json([
+        'mensaje' => 'Producto reabastecido',
+        'stock_anterior' => $stock_actual,
+        'cantidad_reabastecida' => $cantidad_a_sumar,
+        'nuevo_stock' => $nuevo_stock
+    ]);
+}
 }
