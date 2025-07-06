@@ -29,6 +29,7 @@ class ProductoController extends Controller
         'precio' => number_format($request->precio, 2, '.', ''),
         'peso_kg' => number_format($request->peso_kg, 2, '.', '')
     ]);
+    Log::info($request->all());
 
     DB::table('producto')->insert([
         'codigo_producto' => $request->codigo_producto,
