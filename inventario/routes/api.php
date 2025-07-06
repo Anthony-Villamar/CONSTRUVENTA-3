@@ -12,3 +12,4 @@ Route::get('/productos/{codigo_producto}', [ProductoController::class, 'consulta
 Route::put('/productos/{codigo_producto}/existencias', [ProductoController::class, 'actualizarExistencias']);
 Route::get('/alerta-stock', [ProductoController::class, 'alertaStock']);
 Route::put('/productos/{codigo_producto}/reabastecer', [ProductoController::class, 'reabastecer']);
+Route::put('/productos/{codigo_producto}', [ProductoController::class, 'actualizar']);
