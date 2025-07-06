@@ -8,7 +8,42 @@ use Illuminate\Support\Facades\Validator;
 
 class ProductoController extends Controller
 {
-    public function registrar(Request $request)
+//     public function registrar(Request $request)
+// {
+//     $validator = Validator::make($request->all(), [
+//         'codigo_producto' => 'required|string|max:10|unique:producto,codigo_producto',
+//         'nombre' => 'required|string|max:50',
+//         'descripcion' => 'nullable|string',
+//         'categoria' => 'required|string|max:50',
+//         'precio' => 'required|numeric',
+//         'stock' => 'required|integer',
+//         'peso_kg' => 'required|numeric',
+//     ]);
+
+//     if ($validator->fails()) {
+//         return response()->json($validator->errors(), 422);
+//     }
+
+//     // ✅ Redondea antes de insertar
+//     $request->merge([
+//         'precio' => number_format($request->precio, 2, '.', ''),
+//         'peso_kg' => number_format($request->peso_kg, 2, '.', '')
+//     ]);
+
+//     DB::table('producto')->insert([
+//         'codigo_producto' => $request->codigo_producto,
+//         'nombre' => $request->nombre,
+//         'descripcion' => $request->descripcion,
+//         'categoria' => $request->categoria,
+//         'precio' => $request->precio,
+//         'stock' => $request->stock,
+//         'peso_kg' => $request->peso_kg,
+//     ]);
+
+//     return response()->json(['mensaje' => 'Producto registrado correctamente']);
+// }
+
+   public function registrar(Request $request)
 {
     $validator = Validator::make($request->all(), [
         'codigo_producto' => 'required|string|max:10|unique:producto,codigo_producto',
@@ -18,10 +53,19 @@ class ProductoController extends Controller
         'precio' => 'required|numeric',
         'stock' => 'required|integer',
         'peso_kg' => 'required|numeric',
+        'imagen' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // ✅ validación de imagen opcional
     ]);
 
     if ($validator->fails()) {
         return response()->json($validator->errors(), 422);
+    }
+
+    // ✅ Procesa imagen si viene en el request
+    $nombreImagen = null;
+    if ($request->hasFile('imagen')) {
+        $file = $request->file('imagen');
+        $nombreImagen = time() . '_' . $file->getClientOriginalName();
+        $file->move(public_path('imagenes_productos'), $nombreImagen);
     }
 
     // ✅ Redondea antes de insertar
@@ -30,6 +74,7 @@ class ProductoController extends Controller
         'peso_kg' => number_format($request->peso_kg, 2, '.', '')
     ]);
 
+    // ✅ Inserta en la base de datos
     DB::table('producto')->insert([
         'codigo_producto' => $request->codigo_producto,
         'nombre' => $request->nombre,
@@ -38,10 +83,21 @@ class ProductoController extends Controller
         'precio' => $request->precio,
         'stock' => $request->stock,
         'peso_kg' => $request->peso_kg,
+        'imagen' => $nombreImagen, // ✅ guarda solo el nombre de la imagen
     ]);
 
-    return response()->json(['mensaje' => 'Producto registrado correctamente']);
+    // ✅ Genera la URL completa de la imagen para devolver en la respuesta
+    $imagen_url = null;
+    if ($nombreImagen) {
+        $imagen_url = url('imagenes_productos/' . $nombreImagen);
+    }
+
+    return response()->json([
+        'mensaje' => 'Producto registrado correctamente',
+        'imagen_url' => $imagen_url, // ✅ la url completa
+    ]);
 }
+
 
     public function consultar($codigo_producto)
     {
