@@ -194,7 +194,7 @@ class PedidoController extends Controller
 {
     try {
         $query = DB::table('pedido')
-            ->join('producto', 'pedido.producto', '=', 'productos.codigo_producto')
+            ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
             ->where('id_cliente', $usuario_id)
             ->select('pedido.*', 'producto.nombre as nombre_producto');
 
