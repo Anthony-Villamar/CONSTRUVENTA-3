@@ -10,7 +10,78 @@ use Exception;
 
 class PedidoController extends Controller
 {
-    public function crear(Request $request)
+    // public function crear(Request $request)
+    // {
+    //     \Log::info('==> Inicia método crear()');
+    
+    //     $data = json_decode(file_get_contents("php://input"), true);
+    //     \Log::info('Datos recibidos', $data);
+    
+    //     if (!$data || !isset($data['usuario_id']) || !isset($data['productos'])) {
+    //         \Log::error('Datos incompletos');
+    //         return response()->json(['mensaje' => 'Datos incompletos'], 400);
+    //     }
+    
+    //     $usuario_id = $data['usuario_id'];
+    //     $productos = $data['productos'];
+    
+    //     \Log::info('Consultando usuario: ' . $usuario_id);
+    //     $response = Http::get("https://usuarios-1yw0.onrender.com/usuarios/" . $usuario_id);
+    
+    //     if ($response->failed()) {
+    //         \Log::error('Usuario no encontrado');
+    //         return response()->json(['mensaje' => 'Usuario no encontrado'], 404);
+    //     }
+    
+    //     $usuario = $response->json();
+    //     \Log::info('Usuario encontrado', $usuario);
+    
+    //     $ids_pedidos = [];
+    
+    //     foreach ($productos as $producto) {
+    //         \Log::info('Procesando producto', $producto);
+    
+    //         $id_pedido = Str::uuid();
+    //         \Log::info('ID pedido generado: ' . $id_pedido);
+    
+    //         try {
+    //             DB::table('pedido')->insert([
+    //                 'id_pedido' => $id_pedido,
+    //                 'id_cliente' => $usuario['cedula'],
+    //                 'producto' => $producto['codigo_producto'],
+    //                 'cantidad' => $producto['cantidad'],
+    //                 'fecha_pedido' => now(),
+    //                 'direccion_entrega' => $usuario['direccion'],
+    //                 'zona_entrega' => $usuario['zona']
+    //             ]);
+    //             \Log::info('Pedido insertado correctamente');
+    
+    //             $ids_pedidos[] = $id_pedido;
+    
+    //             $dataUpdate = ["cantidad" => $producto['cantidad']];
+    //             $opts = [
+    //                 "http" => [
+    //                     "method" => "PUT",
+    //                     "header" => "Content-Type: application/json",
+    //                     "content" => json_encode($dataUpdate)
+    //                 ]
+    //             ];
+    //             $context = stream_context_create($opts);
+    //             $result = @file_get_contents("https://inventario-d5am.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
+    
+    //             \Log::info('Actualización de inventario', [$result]);
+    //         } catch (\Exception $e) {
+    //             \Log::error('Error al procesar pedido: ' . $e->getMessage());
+    //             return response()->json(['mensaje' => 'Error interno al procesar pedido'], 500);
+    //         }
+    //     }
+    
+    //     return response()->json([
+    //         'mensaje' => 'Pedido(s) creados correctamente',
+    //         'ids_pedidos' => $ids_pedidos
+    //     ]);
+    // }
+public function crear(Request $request)
 {
     \Log::info('==> Inicia método crear()');
 
@@ -36,15 +107,12 @@ class PedidoController extends Controller
     $usuario = $response->json();
     \Log::info('Usuario encontrado', $usuario);
 
-    $ids_pedidos = [];
+    $id_pedido = Str::uuid(); // ✅ Generar solo una vez
 
-    foreach ($productos as $producto) {
-        \Log::info('Procesando producto', $producto);
+    try {
+        foreach ($productos as $producto) {
+            \Log::info('Procesando producto', $producto);
 
-        $id_pedido = Str::uuid();
-        \Log::info('ID pedido generado: ' . $id_pedido);
-
-        try {
             DB::table('pedido')->insert([
                 'id_pedido' => $id_pedido,
                 'id_cliente' => $usuario['cedula'],
@@ -54,10 +122,10 @@ class PedidoController extends Controller
                 'direccion_entrega' => $usuario['direccion'],
                 'zona_entrega' => $usuario['zona']
             ]);
+
             \Log::info('Pedido insertado correctamente');
 
-            $ids_pedidos[] = $id_pedido;
-
+            // Actualizar inventario
             $dataUpdate = ["cantidad" => $producto['cantidad']];
             $opts = [
                 "http" => [
@@ -70,16 +138,17 @@ class PedidoController extends Controller
             $result = @file_get_contents("https://inventario-d5am.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
 
             \Log::info('Actualización de inventario', [$result]);
-        } catch (\Exception $e) {
-            \Log::error('Error al procesar pedido: ' . $e->getMessage());
-            return response()->json(['mensaje' => 'Error interno al procesar pedido'], 500);
         }
-    }
 
-    return response()->json([
-        'mensaje' => 'Pedido(s) creados correctamente',
-        'ids_pedidos' => $ids_pedidos
-    ]);
+        return response()->json([
+            'mensaje' => 'Pedido creado correctamente',
+            'id_pedido' => $id_pedido
+        ]);
+
+    } catch (\Exception $e) {
+        \Log::error('Error al procesar pedido: ' . $e->getMessage());
+        return response()->json(['mensaje' => 'Error interno al procesar pedido'], 500);
+    }
 }
 
 
