@@ -111,18 +111,19 @@ public function crear(Request $request)
     $id_pedido = Str::uuid(); // ✅ Generar solo una vez
 
     try {
-        foreach ($productos as $producto) {
-            \Log::info('Procesando producto', $producto);
+    foreach ($productos as $producto) {
+        $id_pedido = Str::uuid(); // 🔄 Generar ID único en cada loop
 
-            DB::table('pedido')->insert([
-                'id_pedido' => $id_pedido,
-                'id_cliente' => $usuario['cedula'],
-                'producto' => $producto['codigo_producto'],
-                'cantidad' => $producto['cantidad'],
-                'fecha_pedido' => now(),
-                'direccion_entrega' => $usuario['direccion'],
-                'zona_entrega' => $usuario['zona']
-            ]);
+        DB::table('pedido')->insert([
+            'id_pedido' => $id_pedido,
+            'id_cliente' => $usuario['cedula'],
+            'producto' => $producto['codigo_producto'],
+            'cantidad' => $producto['cantidad'],
+            'fecha_pedido' => now(),
+            'direccion_entrega' => $usuario['direccion'],
+            'zona_entrega' => $usuario['zona']
+        ]);
+
 
             \Log::info('Pedido insertado correctamente');
 
@@ -142,9 +143,10 @@ public function crear(Request $request)
         }
 
         return response()->json([
-            'mensaje' => 'Pedido creado correctamente',
-            'id_pedido' => $id_pedido
-        ]);
+    'mensaje' => 'Pedidos creados correctamente',
+    'ids_pedidos' => $ids_pedidos
+]);
+
 
     } catch (\Exception $e) {
         \Log::error('Error al procesar pedido: ' . $e->getMessage());
