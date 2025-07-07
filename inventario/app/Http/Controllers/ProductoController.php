@@ -53,7 +53,8 @@ class ProductoController extends Controller
         'precio' => 'required|numeric',
         'stock' => 'required|integer',
         'peso_kg' => 'required|numeric',
-        'imagen' => 'nullable|image|mimes:jpeg,png,jpg,jfif,webp|max:2048',
+        // 'imagen' => 'nullable|image|mimes:jpeg,png,jpg,jfif,webp|max:2048',
+        'imagen_url' => 'required|url',
     ]);
 
     if ($validator->fails()) {
@@ -61,12 +62,14 @@ class ProductoController extends Controller
     }
 
     // ✅ Procesa imagen si viene en el request
-    $nombreImagen = null;
-    if ($request->hasFile('imagen')) {
-        $file = $request->file('imagen');
-        $nombreImagen = time() . '_' . $file->getClientOriginalName();
-        $file->move(public_path('imagenes_productos'), $nombreImagen);
-    }
+    $nombreImagen = $request->imagen_url; // guarda la URL directamente
+
+    // $nombreImagen = null;
+    // if ($request->hasFile('imagen')) {
+    //     $file = $request->file('imagen');
+    //     $nombreImagen = time() . '_' . $file->getClientOriginalName();
+    //     $file->move(public_path('imagenes_productos'), $nombreImagen);
+    // }
 
     // ✅ Redondea antes de insertar
     $request->merge([
