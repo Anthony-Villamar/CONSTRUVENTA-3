@@ -53,7 +53,7 @@ class ProductoController extends Controller
         'precio' => 'required|numeric',
         'stock' => 'required|integer',
         'peso_kg' => 'required|numeric',
-        'imagen' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
+        'imagen' => 'nullable|image|mimes:jpeg,png,jpg,jfif,webp|max:2048',
     ]);
 
     if ($validator->fails()) {
