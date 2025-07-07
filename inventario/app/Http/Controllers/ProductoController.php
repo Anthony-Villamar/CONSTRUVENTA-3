@@ -53,7 +53,7 @@ class ProductoController extends Controller
         'precio' => 'required|numeric',
         'stock' => 'required|integer',
         'peso_kg' => 'required|numeric',
-        'imagen' => 'nullable|image|mimes:jpeg,png,jpg|max:2048', // ✅ validación de imagen opcional
+        'imagen' => 'nullable|image|mimes:jpeg,png,jpg,webp|max:2048',
     ]);
 
     if ($validator->fails()) {
@@ -155,11 +155,22 @@ public function actualizar(Request $request, $codigo_producto)
         return response()->json($producto);
     }
 
+    // public function listar()
+    // {
+    //     $productos = DB::table('producto')->get();
+    //     return response()->json($productos);
+    // }
     public function listar()
-    {
-        $productos = DB::table('producto')->get();
-        return response()->json($productos);
+{
+    $productos = DB::table('producto')->get();
+
+    foreach ($productos as $p) {
+        $p->imagen_url = $p->imagen ? url('imagenes_productos/' . $p->imagen) : null;
     }
+
+    return response()->json($productos);
+}
+
 
     public function actualizarExistencias(Request $request, $codigo_producto)
     {
