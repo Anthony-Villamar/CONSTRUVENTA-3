@@ -85,7 +85,8 @@ public function crear(Request $request)
 {
     \Log::info('==> Inicia método crear()');
 
-    $data = json_decode(file_get_contents("php://input"), true);
+    // $data = json_decode(file_get_contents("php://input"), true);
+    $data = $request->all();
     \Log::info('Datos recibidos', $data);
 
     if (!$data || !isset($data['usuario_id']) || !isset($data['productos'])) {
