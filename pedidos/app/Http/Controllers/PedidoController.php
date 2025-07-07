@@ -168,27 +168,53 @@ class PedidoController extends Controller
         return response()->json($pedido);
     }
 
+    // public function listarPorUsuario(Request $request, $usuario_id)
+    // {
+    //     try {
+    //         $query = DB::table('pedido')->where('id_cliente', $usuario_id);
+
+    //         if ($request->has('fecha_inicio') && $request->has('fecha_fin')) {
+    //             $query->whereBetween('fecha_pedido', [
+    //                 $request->fecha_inicio . ' 00:00:00',
+    //                 $request->fecha_fin . ' 23:59:59'
+    //             ]);
+    //         }
+
+    //         $pedidos = $query->orderBy('fecha_pedido', 'desc')->get();
+
+    //         return response()->json($pedidos);
+
+    //     } catch (Exception $e) {
+    //         \Log::error('Error en listarPorUsuario', ['message' => $e->getMessage()]);
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
+
     public function listarPorUsuario(Request $request, $usuario_id)
-    {
-        try {
-            $query = DB::table('pedido')->where('id_cliente', $usuario_id);
+{
+    try {
+        $query = DB::table('pedido')
+            ->join('productos', 'pedido.producto', '=', 'productos.codigo_producto')
+            ->where('id_cliente', $usuario_id)
+            ->select('pedido.*', 'productos.nombre as nombre_producto');
 
-            if ($request->has('fecha_inicio') && $request->has('fecha_fin')) {
-                $query->whereBetween('fecha_pedido', [
-                    $request->fecha_inicio . ' 00:00:00',
-                    $request->fecha_fin . ' 23:59:59'
-                ]);
-            }
-
-            $pedidos = $query->orderBy('fecha_pedido', 'desc')->get();
-
-            return response()->json($pedidos);
-
-        } catch (Exception $e) {
-            \Log::error('Error en listarPorUsuario', ['message' => $e->getMessage()]);
-            return response()->json(['error' => $e->getMessage()], 500);
+        if ($request->has('fecha_inicio') && $request->has('fecha_fin')) {
+            $query->whereBetween('fecha_pedido', [
+                $request->fecha_inicio . ' 00:00:00',
+                $request->fecha_fin . ' 23:59:59'
+            ]);
         }
+
+        $pedidos = $query->orderBy('fecha_pedido', 'desc')->get();
+
+        return response()->json($pedidos);
+
+    } catch (Exception $e) {
+        \Log::error('Error en listarPorUsuario', ['message' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
+
     public function listarPedidosPendientes()
 {
     $pedidos = DB::table('pedido')->get(); // si deseas filtrar, usa where()
