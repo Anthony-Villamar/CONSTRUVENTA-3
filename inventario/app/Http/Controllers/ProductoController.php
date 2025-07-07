@@ -60,6 +60,13 @@ class ProductoController extends Controller
         return response()->json($validator->errors(), 422);
     }
 
+    $rutaCarpeta = public_path('imagenes_productos');
+        if (!file_exists($rutaCarpeta)) {
+            mkdir($rutaCarpeta, 0755, true);
+        }
+        chmod($rutaCarpeta, 0755);
+
+
     // ✅ Procesa imagen si viene en el request
     $nombreImagen = null;
     if ($request->hasFile('imagen')) {
