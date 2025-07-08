@@ -215,6 +215,29 @@ class PedidoController extends Controller
     }
 }
 
+public function listarAgrupadosPorHora($usuario_id)
+{
+    try {
+        $pedidos = DB::table('pedido')
+            ->select(
+                DB::raw("DATE_FORMAT(fecha_pedido, '%Y-%m-%d %H:00') as hora_compra"),
+                DB::raw("MIN(id_pedido) as primer_id_pedido"),
+                DB::raw("GROUP_CONCAT(CONCAT(producto, ' x', cantidad) SEPARATOR ', ') as productos")
+            )
+            ->where('id_cliente', $usuario_id)
+            ->groupBy('hora_compra')
+            ->orderBy('hora_compra', 'desc')
+            ->get();
+
+        return response()->json($pedidos);
+
+    } catch (Exception $e) {
+        \Log::error('Error en listarAgrupadosPorHora', ['message' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
+    
     public function listarPedidosPendientes()
 {
     $pedidos = DB::table('pedido')->get(); // si deseas filtrar, usa where()
