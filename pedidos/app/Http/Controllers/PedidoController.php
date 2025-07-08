@@ -190,22 +190,44 @@ class PedidoController extends Controller
     //     }
     // }
 
-    public function listarPorUsuario(Request $request, $usuario_id)
+//     public function listarPorUsuario(Request $request, $usuario_id)
+// {
+//     try {
+//         $query = DB::table('pedido')
+//             ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
+//             ->where('id_cliente', $usuario_id)
+//             ->select('pedido.*', 'producto.nombre as nombre_producto');
+
+//         if ($request->has('fecha_inicio') && $request->has('fecha_fin')) {
+//             $query->whereBetween('fecha_pedido', [
+//                 $request->fecha_inicio . ' 00:00:00',
+//                 $request->fecha_fin . ' 23:59:59'
+//             ]);
+//         }
+
+//         $pedidos = $query->orderBy('fecha_pedido', 'desc')->get();
+
+//         return response()->json($pedidos);
+
+//     } catch (Exception $e) {
+//         \Log::error('Error en listarPorUsuario', ['message' => $e->getMessage()]);
+//         return response()->json(['error' => $e->getMessage()], 500);
+//     }
+// }
+    public function listarPorUsuario($usuario_id)
 {
     try {
-        $query = DB::table('pedido')
-            ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
+        $pedidos = DB::table('pedido')
+            ->join('productos', 'pedido.producto', '=', 'productos.codigo_producto')
+            ->select(
+                'pedido.id_pedido',
+                DB::raw("DATE_FORMAT(fecha_pedido, '%Y-%m-%d %H:%i') as hora_compra"),
+                DB::raw("GROUP_CONCAT(CONCAT(productos.nombre, ' x', pedido.cantidad) SEPARATOR ', ') as productos")
+            )
             ->where('id_cliente', $usuario_id)
-            ->select('pedido.*', 'producto.nombre as nombre_producto');
-
-        if ($request->has('fecha_inicio') && $request->has('fecha_fin')) {
-            $query->whereBetween('fecha_pedido', [
-                $request->fecha_inicio . ' 00:00:00',
-                $request->fecha_fin . ' 23:59:59'
-            ]);
-        }
-
-        $pedidos = $query->orderBy('fecha_pedido', 'desc')->get();
+            ->groupBy('pedido.id_pedido', 'hora_compra')
+            ->orderBy('hora_compra', 'desc')
+            ->get();
 
         return response()->json($pedidos);
 
@@ -214,6 +236,7 @@ class PedidoController extends Controller
         return response()->json(['error' => $e->getMessage()], 500);
     }
 }
+
 
 public function listarAgrupadosPorHora($usuario_id)
 {
