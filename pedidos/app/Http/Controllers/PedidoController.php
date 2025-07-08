@@ -82,7 +82,7 @@ class PedidoController extends Controller
     //     ]);
     // }
 
-    public function crear(Request $request)
+   public function crear(Request $request)
 {
     \Log::info('==> Inicia método crear()');
 
@@ -110,13 +110,22 @@ class PedidoController extends Controller
 
     $ids_pedidos = [];
 
-    // 🔥 Genera un id_pedido_global para todo el pedido
+    // 🔥 Genera el primer id_pedido, que será también el id_pedido_global
     $id_pedido_global = Str::uuid();
+
+    $primer_producto = true;
 
     foreach ($productos as $producto) {
         \Log::info('Procesando producto', $producto);
 
-        $id_pedido = Str::uuid();
+        // 🔥 Usa el primer id_pedido como global
+        if ($primer_producto) {
+            $id_pedido = $id_pedido_global;
+            $primer_producto = false;
+        } else {
+            $id_pedido = Str::uuid();
+        }
+
         \Log::info('ID pedido generado: ' . $id_pedido);
 
         try {
@@ -156,9 +165,10 @@ class PedidoController extends Controller
     return response()->json([
         'mensaje' => 'Pedido(s) creados correctamente',
         'ids_pedidos' => $ids_pedidos,
-        'id_pedido_global' => $id_pedido_global // 🔥 devuelve si deseas usarlo en frontend
+        'id_pedido_global' => $id_pedido_global
     ]);
 }
+
 
     
 // public function crear(Request $request)
