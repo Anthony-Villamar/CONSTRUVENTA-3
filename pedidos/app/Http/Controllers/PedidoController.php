@@ -219,10 +219,11 @@ public function listarAgrupadosPorHora($usuario_id)
 {
     try {
         $pedidos = DB::table('pedido')
+             ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
             ->select(
                 DB::raw("DATE_FORMAT(fecha_pedido, '%Y-%m-%d %H:00') as hora_compra"),
-                DB::raw("MIN(id_pedido) as primer_id_pedido"),
-                DB::raw("GROUP_CONCAT(CONCAT(producto, ' x', cantidad) SEPARATOR ', ') as productos")
+                DB::raw("MIN(pedido.id_pedido) as primer_id_pedido"),
+                DB::raw("GROUP_CONCAT(CONCAT(producto.nombre, ' x', pedido.cantidad) SEPARATOR ', ') as productos")
             )
             ->where('id_cliente', $usuario_id)
             ->groupBy('hora_compra')
