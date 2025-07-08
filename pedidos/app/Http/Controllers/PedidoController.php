@@ -339,7 +339,29 @@ public function listarAgrupadosPorHora($usuario_id)
     }
 }
 
-    
+    public function listarPorGlobal($usuario_id)
+{
+    try {
+        $pedidos = DB::table('pedido')
+            ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
+            ->select(
+                'pedido.id_pedido_global',
+                DB::raw("MIN(fecha_pedido) as fecha_compra"),
+                DB::raw("GROUP_CONCAT(CONCAT(producto.nombre, ' x', pedido.cantidad) SEPARATOR ', ') as productos")
+            )
+            ->where('id_cliente', $usuario_id)
+            ->groupBy('pedido.id_pedido_global')
+            ->orderBy('fecha_compra', 'desc')
+            ->get();
+
+        return response()->json($pedidos);
+
+    } catch (Exception $e) {
+        \Log::error('Error en listarPorGlobal', ['message' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage()], 500);
+    }
+}
+
     public function listarPedidosPendientes()
 {
     $pedidos = DB::table('pedido')->get(); // si deseas filtrar, usa where()
