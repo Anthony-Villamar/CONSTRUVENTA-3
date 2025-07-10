@@ -136,7 +136,7 @@ class PedidoController extends Controller
                 ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
                 ->select(
                     'pedido.id_pedido_global',
-                    DB::raw("MIN(fecha_pedido) as fecha_compra"),
+                    DB::raw("MAX(fecha_pedido) as fecha_compra"),
                     DB::raw("GROUP_CONCAT(CONCAT(producto.nombre, ' x', pedido.cantidad) SEPARATOR ', ') as productos")
                 )
                 ->where('id_cliente', $usuario_id)
