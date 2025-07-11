@@ -168,7 +168,7 @@ class PedidoController extends Controller
             ->get();
 
         // 🔥 Obtiene facturas desde tu microservicio de facturación
-        $facturas = Http::get("https://facturacion-dhh9.onrender.com/usuario/" . $usuario_id)->json();
+        $facturas = Http::get("https://facturacion-dhh9.onrender.com/facturas/usuario/" . $usuario_id)->json();
 
         // 🔥 Asigna el total de la factura a cada pedido global
         foreach ($pedidos as $p) {
