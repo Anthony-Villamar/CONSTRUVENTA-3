@@ -173,7 +173,9 @@ class PedidoController extends Controller
         // 🔥 Asigna el total de la factura a cada pedido global
         foreach ($pedidos as $p) {
             $factura = collect($facturas)->firstWhere('id_pedido', $p->id_pedido_global);
-            $p->total_compra = $factura['total'] ?? null; // si no existe factura, queda null
+            $p->total_compra = $factura['total'] ?? null;
+            $p->numero_factura = $factura['id_factura'] ?? null;
+
         }
 
         return response()->json($pedidos);
