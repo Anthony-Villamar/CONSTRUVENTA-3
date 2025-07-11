@@ -129,26 +129,59 @@ class PedidoController extends Controller
         }
     }
 
+    // public function listarPorGlobal($usuario_id)
+    // {
+    //     try {
+    //         $pedidos = DB::table('pedido')
+    //             ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
+    //             ->select(
+    //                 'pedido.id_pedido_global',
+    //                 DB::raw("MAX(fecha_pedido) as fecha_compra"),
+    //                 DB::raw("GROUP_CONCAT(CONCAT(producto.nombre, ' x', pedido.cantidad) SEPARATOR ', ') as productos")
+    //             )
+    //             ->where('id_cliente', $usuario_id)
+    //             ->groupBy('pedido.id_pedido_global')
+    //             ->orderBy('fecha_compra', 'desc')
+    //             ->get();
+
+    //         return response()->json($pedidos);
+
+    //     } catch (Exception $e) {
+    //         \Log::error('Error en listarPorGlobal', ['message' => $e->getMessage()]);
+    //         return response()->json(['error' => $e->getMessage()], 500);
+    //     }
+    // }
     public function listarPorGlobal($usuario_id)
-    {
-        try {
-            $pedidos = DB::table('pedido')
-                ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
-                ->select(
-                    'pedido.id_pedido_global',
-                    DB::raw("MAX(fecha_pedido) as fecha_compra"),
-                    DB::raw("GROUP_CONCAT(CONCAT(producto.nombre, ' x', pedido.cantidad) SEPARATOR ', ') as productos")
-                )
-                ->where('id_cliente', $usuario_id)
-                ->groupBy('pedido.id_pedido_global')
-                ->orderBy('fecha_compra', 'desc')
-                ->get();
+{
+    try {
+        // 🔥 Obtiene pedidos
+        $pedidos = DB::table('pedido')
+            ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
+            ->select(
+                'pedido.id_pedido_global',
+                DB::raw("MAX(fecha_pedido) as fecha_compra"),
+                DB::raw("GROUP_CONCAT(CONCAT(producto.nombre, ' x', pedido.cantidad) SEPARATOR ', ') as productos")
+            )
+            ->where('id_cliente', $usuario_id)
+            ->groupBy('pedido.id_pedido_global')
+            ->orderBy('fecha_compra', 'desc')
+            ->get();
 
-            return response()->json($pedidos);
+        // 🔥 Obtiene facturas desde tu microservicio de facturación
+        $facturas = Http::get("https://facturacion-dhh9.onrender.com/usuario/" . $usuario_id)->json();
 
-        } catch (Exception $e) {
-            \Log::error('Error en listarPorGlobal', ['message' => $e->getMessage()]);
-            return response()->json(['error' => $e->getMessage()], 500);
+        // 🔥 Asigna el total de la factura a cada pedido global
+        foreach ($pedidos as $p) {
+            $factura = collect($facturas)->firstWhere('id_pedido', $p->id_pedido_global);
+            $p->total_compra = $factura['total'] ?? null; // si no existe factura, queda null
         }
+
+        return response()->json($pedidos);
+
+    } catch (Exception $e) {
+        \Log::error('Error en listarPorGlobal', ['message' => $e->getMessage()]);
+        return response()->json(['error' => $e->getMessage()], 500);
     }
+}
+
 }
