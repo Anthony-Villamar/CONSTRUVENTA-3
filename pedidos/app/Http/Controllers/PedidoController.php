@@ -24,7 +24,7 @@ class PedidoController extends Controller
         $usuario_id = $data['usuario_id'];
         $productos = $data['productos'];
 
-        $response = Http::get("https://usuarios-1yw0.onrender.com/usuarios/" . $usuario_id);
+        $response = Http::get("https://usuarios-a9g3.onrender.com/usuarios/" . $usuario_id);
 
         if ($response->failed()) {
             \Log::error('Usuario no encontrado');
@@ -79,7 +79,7 @@ class PedidoController extends Controller
                     ]
                 ];
                 $context = stream_context_create($opts);
-                $result = @file_get_contents("https://inventario-d5am.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
+                $result = @file_get_contents("https://inventario-gfxs.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
 
                 \Log::info('Actualización de inventario', [$result]);
             } catch (\Exception $e) {
@@ -168,7 +168,7 @@ class PedidoController extends Controller
             ->get();
 
         // 🔥 Obtiene facturas desde tu microservicio de facturación
-        $facturas = Http::get("https://facturacion-dhh9.onrender.com/facturas/usuario/" . $usuario_id)->json();
+        $facturas = Http::get("https://facturacion-hyna.onrender.com/facturas/usuario/" . $usuario_id)->json();
 
         // 🔥 Asigna el total de la factura a cada pedido global
         foreach ($pedidos as $p) {
