@@ -129,28 +129,7 @@ class PedidoController extends Controller
         }
     }
 
-    // public function listarPorGlobal($usuario_id)
-    // {
-    //     try {
-    //         $pedidos = DB::table('pedido')
-    //             ->join('producto', 'pedido.producto', '=', 'producto.codigo_producto')
-    //             ->select(
-    //                 'pedido.id_pedido_global',
-    //                 DB::raw("MAX(fecha_pedido) as fecha_compra"),
-    //                 DB::raw("GROUP_CONCAT(CONCAT(producto.nombre, ' x', pedido.cantidad) SEPARATOR ', ') as productos")
-    //             )
-    //             ->where('id_cliente', $usuario_id)
-    //             ->groupBy('pedido.id_pedido_global')
-    //             ->orderBy('fecha_compra', 'desc')
-    //             ->get();
 
-    //         return response()->json($pedidos);
-
-    //     } catch (Exception $e) {
-    //         \Log::error('Error en listarPorGlobal', ['message' => $e->getMessage()]);
-    //         return response()->json(['error' => $e->getMessage()], 500);
-    //     }
-    // }
     public function listarPorGlobal($usuario_id)
 {
     try {
@@ -168,7 +147,7 @@ class PedidoController extends Controller
             ->get();
 
         // 🔥 Obtiene facturas desde tu microservicio de facturación
-        $facturas = Http::get("https://facturacion-hyna.onrender.com/facturas/usuario/" . $usuario_id)->json();
+        $facturas = Http::get("https://facturacion-cqr4.onrender.com/facturas/usuario/" . $usuario_id)->json();
 
         // 🔥 Asigna el total de la factura a cada pedido global
         foreach ($pedidos as $p) {
