@@ -24,7 +24,7 @@ class PedidoController extends Controller
         $usuario_id = $data['usuario_id'];
         $productos = $data['productos'];
 
-        $response = Http::get("https://usuarios-a9g3.onrender.com/usuarios/" . $usuario_id);
+        $response = Http::get("https://construventa-2-36ul.onrender.com/usuarios/" . $usuario_id);
 
         if ($response->failed()) {
             \Log::error('Usuario no encontrado');
