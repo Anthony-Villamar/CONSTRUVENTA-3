@@ -79,7 +79,7 @@ class PedidoController extends Controller
                     ]
                 ];
                 $context = stream_context_create($opts);
-                $result = @file_get_contents("https://inventario-gfxs.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
+                $result = @file_get_contents("https://inventario-u6ci.onrender.com/api/productos/{$producto['codigo_producto']}/existencias", false, $context);
 
                 \Log::info('Actualización de inventario', [$result]);
             } catch (\Exception $e) {
